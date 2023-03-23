@@ -80,6 +80,8 @@ View(bats_co2)
 #P_dbar is in dbar and we need bar
 
 #We need to convert units scaling when using CO2SYS
+#Lab report
+#Intro>Methods>Results>Discussion mini-lab
 
 
 
