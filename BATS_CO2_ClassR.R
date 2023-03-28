@@ -71,17 +71,87 @@ View(bats_co2)
 #We have all of variables that we need to calculate the surface seawater chemistry at BATS station, but we need to be very careful about our units. 
 #We have TA, DIC, T,S, Pt, Sit, Pressure. 
 #What are units of these and what does CO2SYS need?
+
 #TA uequiv, which is (umol/kg) and need moles/kg
+#Alk*10^-6
+
 #DIC umol/kg, and we need mol/kg
+#CO2*10^-6
+
 #T is in degrees C and we need degrees C
+#Temp
+
 #S is in PSS and we will use EOS80
-#Pt is in umol/kh and we need mol/kg
+#Sal1
+
+#Pt is in umol/kg and we need mol/kg
+#PO41*10^-6
+
 #Sit is in umol/kg and we need mol/kg
+#Si1*10^-6
+
 #P_dbar is in dbar and we need bar
+#P_dbar*10^-1
 
 #We need to convert units scaling when using CO2SYS
 #Lab report
 #Intro>Methods>Results>Discussion mini-lab
+
+
+####continuación 
+#flag=15 ALK and DIC given
+?carb
+
+bats_co2sys=
+  bats_co2%>%
+  filter(Alk!=-999,CO2!=-999,Sal1!=-999,Temp!=-999,
+         P_dbar!=-999,PO41!=-999,Si1!=-999)%>%
+  rename(TotalC=CO2) %>% 
+ mutate(carb(flag=15, Alk*10^-6, TotalC*10^-6, 
+         S=Sal1, T=Temp,
+         Patm=1,P=P_dbar*10^-1,
+         Pt=PO41*10^-6, Sit=Si1*10^-6,
+         k1k2="l", kf="pf", ks="d", pHscale="T",
+         b="u74", gas="potential", 
+         warn="y", eos="eos80",long=360-lonW,lat=latN))
+
+#filter for only the surface ocean 
+bats_co2sys_surf=bats_co2sys%>%
+  filter(Depth<100) #select only upper 100 meters
+
+#1)Is surface ocean pCO2 increasing
+bats_co2sys_surf %>% 
+  ggplot()+
+  geom_point(mapping=aes(x=decy,y=pCO2insitu))
+
+
+check=bats_co2sys_surf %>% 
+  fiter(pCO2<200)
+
+pco2_model=lm(pCO2insitu~decy,data=bats_co2sys_surf)
+summary(pco2_model)
+pco2_model
+
+#For Thursday
+#how to check model performance
+#how to plot model predictions
+
+#For homework
+#Make decimal year vs pco2 plot pretty
+#Could also include methods text for co2 sys lab report
+
+
+
+#using pco2 to predict year
+#if decimal year first meaning you will predict year using co2
+
+
+#360-longW=Degrees longitude to the East. In this case is necessary
+
+  
+
+
+
 
 
 
