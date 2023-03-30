@@ -5,10 +5,14 @@
 #3) Is ocean seawater saturation state with respect to aragonite decreasing?
 #######################
 #Load Libraries
+#install.packages("performance")
+#install.packages("see")
+#install.packages("tidyverse")
+library(performance)
 library(tidyverse)
 library(seacarb)
 #######################
-library(readr)
+
 bats_bottle <- read_delim("bats_bottle.txt", 
                           delim = "\t", escape_double = FALSE, 
                           col_names = FALSE, trim_ws = TRUE, skip = 60)
@@ -120,17 +124,31 @@ bats_co2sys_surf=bats_co2sys%>%
   filter(Depth<100) #select only upper 100 meters
 
 #1)Is surface ocean pCO2 increasing
-bats_co2sys_surf %>% 
-  ggplot()+
-  geom_point(mapping=aes(x=decy,y=pCO2insitu))
 
+bats_co2plot=
+  bats_co2sys_surf %>% 
+  ggplot()+
+  geom_point(mapping=aes(x=decy,y=pCO2insitu))+
+  xlab('Time (y)')+
+  ylab('pCO2 (uatm)')+
+  scale_x_continuous(limits=c(1980,2023,10))+
+  theme(panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      axis.line = element_line(color="black"),
+      plot.title=element_text(hjust=.5,size=14),
+      text = element_text(size=13))+
+  geom_smooth(aes(x=decy, y=pCO2insitu),method = "lm")
+bats_co2plot
 
 check=bats_co2sys_surf %>% 
   fiter(pCO2<200)
+#p<0.05 means its significant
 
 pco2_model=lm(pCO2insitu~decy,data=bats_co2sys_surf)
 summary(pco2_model)
-pco2_model
+
+
 
 #For Thursday
 #how to check model performance
@@ -149,11 +167,27 @@ pco2_model
 #360-longW=Degrees longitude to the East. In this case is necessary
 
   
+#####Using performance check model made
 
+check_model(pco2_model)
+summary(pco2_model)
+anova(pco2_model)
 
+#the tidy way with dplyr but we need to rename outputs
+bats_co2sys_surf_pred=
+bats_co2sys_surf%>%
+  mutate(predict(pco2_model,interval='confidence',level=0.95))
 
+#the base R way with cbind and do not need to rename outputs
+bats_co2sys_surf_pred=
+cbind(bats_co2sys_surf,predict(pco2_model, interval='confidence', level=0,95))
 
+bats_co2sys_surf %>% 
+  ggplot()+
+  geom_point(mapping=aes(x=decy,y=pCO2insitu))+
+  theme_classic()
 
-
+#There is a seasonal cycle in surface ocean pCO2 at Bats with higher pco2 observed in late summer to early fall and lower pco2 observed i late winter and early spring.Consistent, detectable (p<0.001) annual increase in pco2 by 1.85+-0.07 uatm/ year, 
+#also shows plot with model figure caption describes plot (points=data, line=model, shaded region 95% confidence intervals)
 
 
