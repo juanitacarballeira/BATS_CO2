@@ -190,4 +190,94 @@ bats_co2sys_surf %>%
 #There is a seasonal cycle in surface ocean pCO2 at Bats with higher pco2 observed in late summer to early fall and lower pco2 observed i late winter and early spring.Consistent, detectable (p<0.001) annual increase in pco2 by 1.85+-0.07 uatm/ year, 
 #also shows plot with model figure caption describes plot (points=data, line=model, shaded region 95% confidence intervals)
 
+##How can we improve pCO2 predictions
+#What might be some valuable predictors of stmospheric pco2
+#Temperature- measure of atmospheric pco2, also partial pressure pco2 seaewater
+#Seasons (month vs. winter)
+#Salinity-impacts solubility
+#Dissolved oxygen-photosynthesis and respiration impact on DO and CO2
+#Saltier water has a lower pCO2
+#Years: annual increase atmospheric CO2
+#Nutrients: also related to photosynthesis
+
+#create a year and month column
+bats_co2sys_surf$year=
+  as.numeric(substr(bats_co2sys_surf$yyyymmdd,1,4))
+             
+bats_co2sys_surf$month=
+  as.numeric(substr(bats_co2sys_surf$yyyymmdd,5,6))
+
+view(bats_co2sys_surf)
+
+#we can build many models to fit our data
+#more predictors=higher r^2
+
+m1=lm(pCO2insitu~decy,data=bats_co2sys_surf)
+m2=lm(pCO2insitu~year+month,data=bats_co2sys_surf)
+m3=lm(pCO2insitu~year+month+Temp,data=bats_co2sys_surf)
+summary(m1) #r^2=0.3
+summary(m2) #r^2=0.4
+summary(m3) #r^2=0.7
+#AIC(m1,m2,m3) #use AIC to slect better models (lower model=better model)
+
+#bats_surf_sub=
+  #bats_co2sys_surf %>% 
+  #select(year,month,Temp,Sal1,'O2(1)','NO31','NO21','PO41') %>% 
+  #replace_with_na_all(condition=~.x==-999)
+#bats_surf_sub=bats_surf_sub[complete.cases(bats_surf_sub),]
+
+bats_surf_sub=
+  bats_co2sys_surf%>%
+  filter(year!=-999,month!=-999,Sal1!=-999,Temp!=-999,`O2(1)`!=-999,NO31!=-999,NO21!=-999,PO41!=-999)
+##Now we all have our predictors without -999 missing data
+view(bats_surf_sub)
+
+step(lm(pCO2insitu~1,data=bats_surf_sub),
+     direction="forward",
+     trace=1,
+     scope= ~year+month+Sal1+Temp+ `O2(1)`+`NO31`+ `NO21`+`PO41`)
+
+model_AIC= lm(pCO2insitu~Temp+ year+`NO31`+ Sal1+ `NO21`,data=bats_surf_sub)
+summary(model_AIC)
+check_model(model_AIC)
+
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
 
