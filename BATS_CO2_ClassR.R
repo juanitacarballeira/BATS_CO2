@@ -61,8 +61,8 @@ View(bats_bottle)
 ?carb
 
 #carb(flag, var1, var2, S=35, T=25, Patm=1, P=0, Pt=0, Sit=0,
-     #k1k2="x", kf="x", ks="d", pHscale="T", b="u74", gas="potential", 
-     #warn="y", eos="eos80", long=1.e20, lat=1.e20)
+#k1k2="x", kf="x", ks="d", pHscale="T", b="u74", gas="potential", 
+#warn="y", eos="eos80", long=1.e20, lat=1.e20)
 #We have TA, DIC, T,S, Pt, Sit, but not pressure. 
 
 #First calculate pressure using TEOS-10
@@ -207,7 +207,7 @@ bats_co2sys_surf$year=
 bats_co2sys_surf$month=
   as.numeric(substr(bats_co2sys_surf$yyyymmdd,5,6))
 
-view(bats_co2sys_surf)
+bats_co2sys_surf
 
 #we can build many models to fit our data
 #more predictors=higher r^2
@@ -218,7 +218,7 @@ m3=lm(pCO2insitu~year+month+Temp,data=bats_co2sys_surf)
 summary(m1) #r^2=0.3
 summary(m2) #r^2=0.4
 summary(m3) #r^2=0.7
-#AIC(m1,m2,m3) #use AIC to slect better models (lower model=better model)
+#AIC(m1,m2,m3) #use AIC to sElect better models (lower model=better model)
 
 #bats_surf_sub=
   #bats_co2sys_surf %>% 
@@ -241,8 +241,23 @@ model_AIC= lm(pCO2insitu~Temp+ year+`NO31`+ Sal1+ `NO21`,data=bats_surf_sub)
 summary(model_AIC)
 check_model(model_AIC)
 
-                
-                
+bats_surf_sub_pred=
+  cbind(bats_surf_sub, 
+        predict(model_AIC, interval = 'confidence',level=0.95))
+
+#add prediction line to ggplot
+bats_surf_sub_pred %>% 
+  ggplot()+
+  geom_point(mapping=aes(x=decy,y=pCO2insitu))+
+  geom_line(aes(decy,fit),color="purple")+
+  geom_ribbon(aes(x=decy,ymin=lwr,ymax=upr),alpha=0.2,fill="purple")+
+  theme_classic()
+
+bats_surf_sub_pred %>% 
+  ggplot()+
+  geom_point(mapping=aes(x=decy,y=pCO2insitu-fit))+
+  theme_classic()
+
                 
                 
                 
